@@ -1,0 +1,42 @@
+一共三个虚拟机,ip分别是
+192.168.232.132（zookeeper，codis-server主从（6379,6380），codis-proxy，codis-sentinels，codis-dashboard，codis-fe）
+192.168.232.129（zookeeper，codis-server主从（6379,6380），codis-proxy，codis-sentinels）
+192.168.232.130（zookeeper，codis-server主从（6379,6380），codis-sentinels）
+
+zookeeper端口2181
+codis-proxy端口19000
+codis-sentinels端口26379
+
+启动脚本（具体路径根据实际安装的路径修改）
+启动zookpeer（三台机）
+cd /opt/zookeeper-3.4.10/bin
+./zkServer.sh start
+./zkServer.sh status
+./zkServer.sh stop
+
+启动codis-server（三台机）
+cd /usr/local/codis/bin/
+./codis-server /usr/local/codis/conf/redis-6379.conf
+./codis-server /usr/local/codis/conf/redis-6380.conf
+
+启动codis-dashboard（某一台机）
+cd /usr/local/codis/bin/
+nohup ./codis-dashboard --ncpu=1 --config=/usr/local/codis/conf/dashboard.conf --log=/usr/local/codis/log/dashboard.log --log-level=INFO &
+ps aux|grep codis
+关闭:./codis-admin --dashboard=192.168.232.132:18080 --shutdown
+
+启动codis-proxy（两台机）
+cd /usr/local/codis/bin/
+nohup ./codis-proxy --ncpu=1 --config=/usr/local/codis/conf/proxy.conf --log=/usr/local/codis/log/proxy.log --log-level=INFO &
+
+启动Redis-sentinel（三台机）
+cd /usr/local/codis/bin/
+nohup ./redis-sentinel /usr/local/codis/conf/sentinel.conf &
+
+启动codis-fe（一台机）
+nohup ./codis-fe --ncpu=1 --log=/usr/local/codis/log/fe.log --log-level=INFO --dashboard-list=/usr/local/codis/conf/codis.json --listen=192.168.232.132:18090 &
+
+
+
+codis github:https://github.com/CodisLabs/codis/blob/release3.2/doc/tutorial_zh.md
+详情参考https://blog.csdn.net/qifengzou/article/details/72902503
